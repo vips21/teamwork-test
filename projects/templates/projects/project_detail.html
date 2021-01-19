@@ -1,0 +1,90 @@
+{% extends "projects/main.html" %}
+
+{% block content %}
+    {% if project %}
+        <title>Project</title>
+        <blockquote class="blockquote text-center">
+            <p class="mb-3">Project details</p>
+        </blockquote>
+    {% else %}
+        <title>Add Project</title>
+        <blockquote class="blockquote text-center">
+            <p class="mb-3">Add Project</p>
+        </blockquote>
+    {% endif %}    
+    
+    <form style="margin-top: 10px; margin-left: 10px;" id="project" enctype="multipart/form-data">
+        <div class="form-group row">
+          <label for="name" class="col-sm-2 col-form-label">Name</label>
+          <div class="col-sm-4">
+            <input type="text" class="form-control" id="name" name="name" placeholder="name" value="{{project.name}}" required>
+          </div>
+        </div>
+        <div class="form-group row">
+          <label for="description" class="col-sm-2 col-form-label">Description</label>
+          <div class="col-sm-4">
+            <textarea class="form-control" id="description" name="description" placeholder="description" rows="3" required>{{project.description}}</textarea>
+          </div>
+        </div>
+        <div class="form-group row">
+            <label for="duration" class="col-sm-2 col-form-label">Duration</label>
+            <div class="col-sm-4">
+              <input type="number" id="duration" name="duration" placeholder="duration" value={{project.duration}} required> Days
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="avatar" class="col-sm-2 col-form-label">Avatar</label>
+            <div class="col-sm-4">
+                <input type="file" name="avatar" id="avatar" accept="image/*">
+            </div>
+        </div>
+        <button class="btn btn-primary" type="submit">Submit</button>          
+    </form>
+    <a class="btn btn-primary text-center" href="/project/{{project.id}}/task/new" role="button">Add new task</a>
+    
+    {% if tasks %}
+    <blockquote class="blockquote text-center">
+        <p class="mb-3">Project task</p>
+    </blockquote>
+    
+    {% for task in tasks %}
+    <div class="accordion" id="accordionExample" style="margin-left: 10px;">
+          <a href="/project/{{ project.id }}/task/{{task.id}}">{{task.name}}</a>
+          <button class="delete" value="{{task.id}}" style="margin-left: 10px;">Delete</button>
+          {% for child in task.task_set.all %}
+          <ul>
+                <li><a href="/project/{{ project.id }}/task/{{child.id}}">{{child.name}}</a></li>
+                <button class="delete" value="{{child.id}}" style="margin-left: 10px;">Delete</button>
+          </ul>
+          {% endfor %}
+    </div>
+    {% endfor %}
+    {% endif %}
+    <script>
+        $( document ).ready(function() {
+            var project = "{{project.id}}";
+            if(project){
+				url = '/api/project/'+project+'/';
+				method = 'PATCH'
+			}
+			else{
+				url = '/api/project/';
+                method = 'POST'
+			}
+            $("form#project").submit(function(e) {
+                e.preventDefault();
+                var formData = new FormData(this);
+                Ajax(url, method, formData, function(response){
+					window.location.href = '/';
+                });
+            });
+            $('.delete').click(function( event ) {
+                event.preventDefault();
+                var id  = $(this).val();
+                Ajax('/api/task/'+id, 'delete', {},function(response){
+					location.reload();
+                });
+            });  
+        });    
+    </script>
+{% endblock content %}

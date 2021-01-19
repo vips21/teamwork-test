@@ -1,0 +1,85 @@
+{% extends "projects/main.html" %}
+
+{% block content %}
+    {% if task %}
+        <title>Project</title>
+        <blockquote class="blockquote text-center">
+            <p class="mb-3">Task details</p>
+        </blockquote>
+    {% else %}
+        <title>Add Project</title>
+        <blockquote class="blockquote text-center">
+            <p class="mb-3">Add Task</p>
+        </blockquote>
+    {% endif %} 
+	
+	<form style="margin-top: 10px; margin-left: 10px;" id="task">
+		<div class="form-group row">
+            <label for="project" class="col-sm-2 col-form-label">Project</label>
+			<div class="col-sm-4">
+				<select name="project" class="col-sm-12 col-form-label" id="project" required>
+					<option value="">Please select project</option>
+					{% for project in projects %}
+						<option value="{{project.id}}"{% if project.id == task.project.id %} selected {% endif %} {% if task.parent %} disabled {% endif %}>{{project.name}}</option>
+					{% endfor %}    
+				</select>
+			</div>
+        </div>
+		<div class="form-group row">
+        	<label for="name" class="col-sm-2 col-form-label">Name</label>
+        	<div class="col-sm-4">
+          		<input type="text" class="form-control" id="name" name="name" placeholder="name" value="{{task.name}}" required>
+        	</div>
+      </div>
+      <div class="form-group row">
+        <label for="description" class="col-sm-2 col-form-label">Description</label>
+        <div class="col-sm-4">
+          <textarea class="form-control" id="description" name="description" placeholder="description" rows="3" required>{{task.description}}</textarea>
+        </div>
+      </div>
+      <div class="form-group row">
+          <label for="start_date" class="col-sm-2 col-form-label">Start date</label>
+          <div class="col-sm-4">
+              <input type="date" id="start_date" name="start_date" value="{{task.start_date|date:'Y-m-d'}}" required>
+          </div>
+      </div>
+      <div class="form-group row">
+          <label for="end_date" class="col-sm-2 col-form-label">End date</label>
+          <div class="col-sm-4">
+              <input type="date" id="end_date" name="end_date" value="{{task.end_date|date:'Y-m-d'}}" required>
+          </div>
+	  </div>
+	  <div class="form-group row">
+		<label for="assignee" class="col-sm-2 col-form-label">Assignee</label>
+		<div class="col-sm-4">
+			<select name="assignee" class="col-sm-12 col-form-label" id="assignee">
+				<option value="">Please select user</option>
+				{% for user in users %}
+					<option value="{{user.id}}" {% if user.id == task.assignee.id %} selected {% endif %}>{{user.username}}</option>
+				{% endfor %}    
+			</select>
+		</div>
+	</div>
+      <button class="btn btn-primary" type="submit">Submit</button>          
+  </form>
+  <script>
+	$( document ).ready(function() {
+		var task = "{{task.id}}";
+		$('form#task').submit(function( event ) {
+			event.preventDefault();
+			if(task){
+				url = '/api/task/'+task+'/';
+				method = 'PATCH'
+			}
+			else{
+				url = '/api/task/';
+				method = 'POST'
+			}
+			var formData = new FormData(this);
+			Ajax(url, method, formData, function(response){
+				window.location.href = '/project/'+response.project;
+			});
+		});
+	});    
+</script>
+{% endblock content %}    
